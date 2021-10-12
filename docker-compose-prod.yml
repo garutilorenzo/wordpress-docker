@@ -1,0 +1,146 @@
+version: '3.8'
+services:
+
+  wordpress:
+    image: ${WORDPRESS_IMAGE:-wordpress}:${WORDPRESS_PROD_VERSION:-latest}
+    container_name: wordpress
+    volumes:
+      - type: bind
+        source: ${WORDPRESS_DATA_DIR:-./wordpress-src}
+        target: /var/www/html
+    environment:
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST:-mysql}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-wordpress}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-W0rdpr3Ss.}
+    depends_on:
+      - mysql
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "5"
+    restart: always
+
+  mysql:
+    image: mariadb:${MARIADB_VERSION:-latest}
+    container_name: mysql
+    volumes:
+      - type: volume
+        source: mysql
+        target: /var/lib/mysql
+        volume:
+          nocopy: true
+      - type: bind
+        source: ${MYSQL_DATA_DIR:-./wordpress-sql}
+        target: /docker-entrypoint-initdb.d
+        read_only: true
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
+      MYSQL_USER: ${WORDPRESS_DB_USER:-wordpress}
+      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD:-W0rdpr3Ss.}
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME:-wordpress}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "5"
+    restart: always
+  
+  wordpress-cli:
+    image: ${WORDPRESS_IMAGE:-wordpress}:${WORDPRESS_CLI_VERSION:-latest}
+    volumes:
+      - type: bind
+        source: ./config/php.conf.ini
+        target: /usr/local/etc/php/conf.d/conf.ini
+        read_only: true
+      - type: bind
+        source: ${WORDPRESS_DATA_DIR:-./wordpress-src}
+        target: /var/www/html
+    environment:
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST:-mysql}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-wordpress}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-W0rdpr3Ss.}
+    depends_on:
+      - mysql
+      - wordpress
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "5"
+    restart: "no"
+
+  pma:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: ${WORDPRESS_DB_HOST:-mysql}
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
+      PMA_ABSOLUTE_URI: http://example.com/pma
+    depends_on:
+      - mysql
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "5"
+    restart: always
+
+  nginx:
+    image: nginx:${NGINX_VERSION:-latest}
+    container_name: nginx
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - type: bind
+        source: ${WORDPRESS_DATA_DIR:-./wordpress-src}
+        target: /var/www/html
+      - type: bind
+        source: ${NGINX_CONF_DIR:-./config/nginx/cfg/}
+        target: /etc/nginx/custom.conf.d
+      - type: bind
+        source: ${NGINX_TEMPLATE_DIR:-./config/nginx/tpl/}
+        target: /etc/nginx/templates/
+      # - type: bind
+      #   source: ./data/certbot/conf
+      #   target: /etc/letsencrypt
+      # - type: bind
+      #   source: ./data/certbot/www
+      #   target: /var/www/certbot
+    environment:
+      SERVER_NAME: example.com
+      SERVER_ALT_NAME: www.example.com
+      WP_CONTAINER_NAME: wordpress
+      SECURE_SUBNET: ${SECURE_SUBNET:-192.168.0.0/16}
+    depends_on:
+      - wordpress
+    # command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'" #certobt
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "5"
+    restart: always
+  
+  # certbot:
+  #   image: certbot/certbot
+  #   restart: unless-stopped
+  #   volumes:
+  #     - type: bind
+  #       source: ./data/certbot/conf
+  #       target: /etc/letsencrypt
+  #     - type: bind
+  #       source: ./data/certbot/www
+  #       target: /var/www/certbot
+  #   entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "1m"
+  #       max-file: "5"
+
+volumes:
+ mysql:

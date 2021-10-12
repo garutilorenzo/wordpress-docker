@@ -1,0 +1,95 @@
+version: '3.8'
+services:
+
+  wordpress:
+    image: ${WORDPRESS_IMAGE:-wordpress}:${WORDPRESS_DEV_VERSION:-latest}
+    container_name: wordpress
+    volumes:
+      - type: bind
+        source: ${WORDPRESS_DATA_DIR:-./wordpress-src}
+        target: /var/www/html
+    environment:
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST:-mysql}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-wordpress}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-W0rdpr3Ss.}
+    ports: 
+      - 80:80
+    depends_on:
+      - mysql
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "5"
+    restart: always
+
+  mysql:
+    image: mariadb:${MARIADB_VERSION:-latest}
+    container_name: mysql
+    volumes:
+      - type: volume
+        source: mysql
+        target: /var/lib/mysql
+        volume:
+          nocopy: true
+      - type: bind
+        source: ${MYSQL_DATA_DIR:-./wordpress-sql}
+        target: /docker-entrypoint-initdb.d
+        read_only: true
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
+      MYSQL_USER: ${WORDPRESS_DB_USER:-wordpress}
+      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD:-W0rdpr3Ss.}
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME:-wordpress}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "5"
+    restart: always
+  
+  wordpress-cli:
+    image: ${WORDPRESS_IMAGE:-wordpress}:${WORDPRESS_CLI_VERSION:-latest}
+    volumes:
+      - type: bind
+        source: ./config/php.conf.ini
+        target: /usr/local/etc/php/conf.d/conf.ini
+        read_only: true
+      - type: bind
+        source: ${WORDPRESS_DATA_DIR:-./wordpress-src}
+        target: /var/www/html
+    environment:
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST:-mysql}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-wordpress}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-W0rdpr3Ss.}
+    depends_on:
+      - mysql
+      - wordpress
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "5"
+    restart: "no"
+
+  pma:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: ${WORDPRESS_DB_HOST:-mysql}
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
+    ports:
+      - 8080:80
+    depends_on:
+      - mysql
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "5"
+    restart: always
+
+volumes:
+ mysql:

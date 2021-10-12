@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+
+  wordpress:
+    image: ${CUSTOM_WORDPRESS_IMAGE:-my-wordpress}:${WORDPRESS_VERSION:-latest}
+    build:
+      context: wordpress/
+      args:
+        WORDPRESS_VERSION: ${WORDPRESS_VERSION} 
+        WORDPRESS_UID: ${WORDPRESS_UID}
+        WORDPRESS_GID: ${WORDPRESS_GID}
+        WORDPRESS_USER: ${WORDPRESS_USER} 
+        WORDPRESS_GROUP: ${WORDPRESS_GROUP}
+  
+  wordpress-cli:
+    image: ${CUSTOM_WORDPRESS_IMAGE:-my-wordpress}:${WORDPRESS_CLI_VERSION:-latest}
+    build:
+      context: wordpress/
+      args:
+        WORDPRESS_VERSION: ${WORDPRESS_CLI_VERSION} 
+        WORDPRESS_UID: ${WORDPRESS_UID}
+        WORDPRESS_GID: ${WORDPRESS_GID}
+        WORDPRESS_USER: ${WORDPRESS_USER} 
+        WORDPRESS_GROUP: ${WORDPRESS_GROUP}
