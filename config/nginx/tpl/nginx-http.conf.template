@@ -8,7 +8,7 @@ server {
     client_max_body_size 20M;
 
     # Security
-    include /etc/nginx/custom.conf.d/nginx-hardening.conf;
+    include /etc/nginx/custom.conf.d/nginx-custom-configs.conf;
     include /etc/nginx/custom.conf.d/nginx-wp-hardening.conf;
 
     # Prevent Clickjacking

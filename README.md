@@ -221,7 +221,7 @@ To disable this security enhancements edit the config/nginx/tpl/nginx-http.conf.
 
 ```
 # Security
-include /etc/nginx/custom.conf.d/nginx-hardening.conf;
+include /etc/nginx/custom.conf.d/nginx-custom-configs.conf;
 include /etc/nginx/custom.conf.d/nginx-wp-hardening.conf;
 ```
 
