@@ -144,7 +144,7 @@ Success: WordPress installed successfully.
 
 ### Fix permission problem
 
-To fix the permission problem the solution is to build a custom image. This image will then run all the processes inside the container with a user with the same uid and git of your local machines.
+To fix the permission problem the solution is to build a custom image. This image will then run all the processes inside the container with a user with a user with the same uid and gid of your local computer's user.
 
 First we need to check our uid and gid (use the *id* command):
 
