@@ -24,5 +24,7 @@ jobs:
         time: '30s'
     - name: List all containers
       run: docker ps -a
-    - name: Testing connection to laravel
+    - name: Setup wordpress
+      run: docker-compose -f docker-compose-dev.yml run --rm wordpress-cli wp core install --url=http://localhost --title=test --admin_user=admin --admin_email=test@example.com
+    - name: Testing connection to wordpress
       run: docker-compose -f docker-compose-dev.yml exec -T wordpress curl -L --retry 10 --retry-connrefused -I http://localhost
