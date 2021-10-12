@@ -1,0 +1,28 @@
+name: Laravel CI
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Bringup the environment
+      run: docker-compose -f docker-compose-dev.yml --env-file .env up -d
+    - name: Sleep for 30 seconds
+      uses: jakejarvis/wait-action@master
+      with:
+        time: '30s'
+    - name: List all containers
+      run: docker ps -a
+    - name: Testing connection to laravel
+      run: docker-compose -f docker-compose-dev.yml exec -T wordpress curl -L --retry 10 --retry-connrefused -I http://localhost
