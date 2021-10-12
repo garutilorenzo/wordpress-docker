@@ -57,13 +57,13 @@ server {
     }
     
     location ~* /xmlrpc.php$ {
-        allow ${SECURE_SUBNET};
-        allow 127.0.0.1; 
-        deny all;
-
         fastcgi_pass ${WP_CONTAINER_NAME}:9000;
         include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+
+        allow ${SECURE_SUBNET};
+        allow 127.0.0.1; 
+        deny all;
     }
 
     # Remove direct access to the following folders & files
