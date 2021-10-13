@@ -6,6 +6,19 @@
 [![GitHub forks](https://img.shields.io/github/forks/garutilorenzo/wordpress-docker)](https://github.com/garutilorenzo/wordpress-docker/network)
 [![GitHub stars](https://img.shields.io/github/stars/garutilorenzo/wordpress-docker)](https://github.com/garutilorenzo/wordpress-docker/stargazers)
 
+# Table of Contents
+
+* [Requirements](#requirements)
+* [Environment setup](#environment-setup)
+* [Use the environment](#use-the-environment)
+* [WP Cli](#wp-cli)
+* [Fix permission problem](#fix-permission-problem)
+* [Nginx](#nginx)
+* [SSL](#ssl)
+  * [Certbot/Let's encrypt](#certbotlets-encrypt)
+  * [Owned SSL certificates](#owned-ssl-certificates)
+* [PhpMyAdmin](#phpmyadmin)
+
 ### Requirements
 
 To use this environment you need [Docker](https://docs.docker.com/get-docker/) an [Docker compose](https://docs.docker.com/compose/install/) installed.
