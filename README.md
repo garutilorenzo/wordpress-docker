@@ -11,6 +11,7 @@
 * [Requirements](#requirements)
 * [Environment setup](#environment-setup)
 * [Use the environment](#use-the-environment)
+* [Import an existing WP site](#import-an-existing-wp-site)
 * [WP Cli](#wp-cli)
 * [Fix permission problem](#fix-permission-problem)
 * [Nginx](#nginx)
@@ -18,6 +19,7 @@
   * [Certbot/Let's encrypt](#certbotlets-encrypt)
   * [Owned SSL certificates](#owned-ssl-certificates)
 * [PhpMyAdmin](#phpmyadmin)
+* [MySQL dump](#mysql-dump)
 
 ### Requirements
 
@@ -42,6 +44,7 @@ You can find all the settings in the *.env* file in the root folder of this repo
 | `MARIADB_VERSION` | `no`  | `latest`     | MariaDB container version |
 | `MYSQL_ROOT_PASSWORD` | `no`  | `s3cretPassW0rd`     | Development docker image version (embadded apache) |
 | `MYSQL_DATA_DIR` | `no`  | `./wordpress-sql`     | Local path for MySQL backup/restore |
+| `MYSQL_DUMP_DIR` | `no`  | `./mysql-dumps`     | Local where dump_mysql.sh store the MySQL dumps |
 | `NGINX_VERSION` | `no`  | `latest`     | Nginx  container version |
 | `SERVER_NAME` | `yes` | `example.com`      | Second level domain name (Example: example.com)  |
 | `SERVER_ALT_NAME` | `yes`  | `www.example.com`    | Third level domain name (Example: www.example.com) |
@@ -140,6 +143,30 @@ Now you have:
 * PhpMyAdmin running, traffic to PhpMyAdmin is filtered by nginx (see PhpMyAdmin section)
 * MySQL running but is not listening on any interface
 * Wordpress CLI container available (see WP Cli section)
+
+### Import an existing WP site
+
+If you have a running WP site and you want to use this environment you have to extract your existing sources in *wordpress-src* directory and the MySQL dump in *wordpress-sql* directory.
+
+**NOTE** before spin up the environment, check wordpress-src directory permission. If you have build a [custom image](#fix-permission-problem) remember to:
+
+```
+chown -R uid:gid wordpress-src/
+```
+
+if you use the standard wordpress image all files and directory must be owned by user and group (www-data). Your system might be have a different uid and git for the www-data user and group (or you might don't have this user and group), so to fix the permission problem use the uid and gid directly:
+
+```
+chown -R 33:33 wordpress-src/
+```
+
+**MySQL NOTE** dump can be in plain text or gzipped. The extension must be *.sql or *.gz
+**MySQL NOTE2** dump will be restored only on the first startup. If you want to restore a new dump you have to:
+
+* stop mysql container (docker-compose stop mysql)
+* remove the mysql volume (docker volume rm wordpress-docker_mysql). **Tip** you can find the volume name with: *docker volume ls.*
+* place the new dump in wordpress-sql
+* start the container (docker-compose up -d)
 
 ### WP Cli
 
@@ -303,3 +330,16 @@ You can access phpMyAdmin at http://127.0.0.1:8080
 #### Production
 
 You can access phpMyAdmin at http://example.com/pma (access filtered by ip)
+
+
+### MySQL dump
+
+To dump the current MySQL state you can use the dump.sh file. The dump will be saved in mysql-dumps directory (you can customize the dump directory in the .env file)
+
+```
+bash dump_mysql.sh 
+ls -la mysql-dumps/
+
+-rw-rw-r--  1 lorenzo lorenzo    473 Oct 18 12:21 wordpress.20211018122109.gz
+-rw-rw-r--  1 lorenzo lorenzo 299673 Oct 18 12:22 wordpress.20211018122247.gz
+```
