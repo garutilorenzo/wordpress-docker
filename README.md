@@ -161,6 +161,7 @@ chown -R 33:33 wordpress-src/
 ```
 
 **MySQL NOTE** dump can be in plain text or gzipped. The extension must be *.sql or *.gz
+
 **MySQL NOTE2** dump will be restored only on the first startup. If you want to restore a new dump you have to:
 
 * stop mysql container (docker-compose stop mysql)
