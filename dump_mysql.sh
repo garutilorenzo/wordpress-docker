@@ -9,7 +9,7 @@ root_pw=${db_root_string#*=}
 db_name_string=$(cat .env | grep WORDPRESS_DB_NAME)
 db_name=${db_name_string#*=}
 
-mysql_path_string=$(cat .env | grep MYSQL_DATA_DIR)
+mysql_path_string=$(cat .env | grep MYSQL_DUMP_DIR)
 mysql_path=${mysql_path_string#*=}
 
 dump_name=${mysql_path}/${db_name}.`date +%Y%m%d%H%M%S`.gz
